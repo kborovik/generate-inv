@@ -41,7 +41,7 @@ def invoice(
 
 @cli.callback(invoke_without_command=True)
 def callback(
-    version: Annotated[bool, Option("--version", help="Show program version")] = None,
+    version: Annotated[bool | None, Option("--version", help="Show program version")] = None,
 ) -> None:
     """Generate synthetic invoice"""
     if version:

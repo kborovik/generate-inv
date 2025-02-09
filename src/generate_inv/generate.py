@@ -13,12 +13,10 @@ Cody Instructions:
 
 import json
 from dataclasses import dataclass
-from sys import exit
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.anthropic import AnthropicModel
-from typer import Exit
 
 from .__init__ import console
 from .settings import settings
@@ -79,7 +77,6 @@ def company() -> Company:
     except Exception as error:
         console.log(error)
         raise error
-        # raise Exit(1)
 
     console.print(
         f"Generated company {result.data.company_id} - {result.data.company_name}. Total tokens: {result._usage.total_tokens}"

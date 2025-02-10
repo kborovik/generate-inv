@@ -1,32 +1,20 @@
-from sys import exit
+import os
 
-from pydantic import Field, SecretStr, ValidationError
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import dotenv
 
-from .__init__ import console
+from .__init__ import ENV_FILE, console
 
+dotenv.load_dotenv(ENV_FILE)
 
-class Settings(BaseSettings):
-    """Application settings."""
-
-    PYDANTIC_AI_MODEL: str = Field(
-        default="claude-3-5-haiku-latest",
-        description="Anthropic LLM model",
-    )
-    ANTHROPIC_API_KEY: SecretStr = Field(
-        default=None,
-        description="Anthropic API key",
-    )
-
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_ignore_empty=True,
-        json_file=".env.json",
-    )
+PYDANTIC_AI_MODEL = os.getenv("PYDANTIC_AI_MODEL", "claude-3-5-haiku-latest")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 
-try:
-    settings = Settings()
-except ValidationError as error:
-    console.log(f"Settings validation error: {error.json(indent=2)}")
-    exit(1)
+def save_settings():
+    dotenv.set_key(ENV_FILE, "PYDANTIC_AI_MODEL", PYDANTIC_AI_MODEL)
+    dotenv.set_key(ENV_FILE, "ANTHROPIC_API_KEY", ANTHROPIC_API_KEY)
+
+
+def list_settings():
+    console.print(f"PYDANTIC_AI_MODEL=[green]{PYDANTIC_AI_MODEL}[/green]")
+    console.print(f"ANTHROPIC_API_KEY=[green]{ANTHROPIC_API_KEY}[/green]")

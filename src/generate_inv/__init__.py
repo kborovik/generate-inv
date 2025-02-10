@@ -5,18 +5,17 @@ from typing import Annotated
 from rich.console import Console
 from typer import Exit, Option, Typer
 
-package_name = metadata(__package__).get("name")
 __version__ = metadata(__package__).get("version")
+package_name = metadata(__package__).get("name")
 
-SETTINGS = Path.home() / ".config" / package_name / "settings.json"
-SETTINGS.mkdir(parents=True, exist_ok=True)
+ENV_FILE = Path.home() / ".config" / package_name / "settings.env"
+ENV_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-DATA_DIR = Path.home() / ".local" / "share" / package_name
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+DB_DIR = Path.home() / ".local" / "share" / package_name
+DB_DIR.mkdir(parents=True, exist_ok=True)
 
 INV_DIR = Path.home() / "Downloads" / package_name
 INV_DIR.mkdir(parents=True, exist_ok=True)
-
 
 cli = Typer(no_args_is_help=True)
 console = Console()
@@ -29,9 +28,8 @@ def company(
     """Generate synthetic company"""
     from . import generate
 
-    console.print(f"Generating {number} of companies")
     for count in range(number):
-        console.print(f"Generating company number {count + 1}...")
+        console.print(f"Generating company number {count + 1} out of {number}")
         company = generate.company()
         console.print(company)
     raise Exit(0)
@@ -48,19 +46,30 @@ def invoice(
     raise Exit(0)
 
 
+@cli.command(no_args_is_help=True)
+def settings(
+    list: Annotated[bool | None, Option("--list", help="List program settings")] = None,
+    save: Annotated[bool | None, Option("--save", help="Save program settings")] = None,
+) -> None:
+    """List or save program settings"""
+    from .settings import list_settings, save_settings
+
+    if list:
+        list_settings()
+    if save:
+        save_settings()
+        console.print(f"Saved program settings to the file {ENV_FILE}")
+
+    raise Exit(0)
+
+
 @cli.callback(invoke_without_command=True)
 def callback(
-    settings: Annotated[bool | None, Option("--settings", help="Show program settings")] = None,
     version: Annotated[bool | None, Option("--version", help="Show program version")] = None,
 ) -> None:
     """Generate synthetic invoice"""
     if version:
         console.print(f"Version: [green]{__version__}[/green]")
-        raise Exit(0)
-    elif settings:
-        from .settings import settings
-
-        console.print(str(settings))
         raise Exit(0)
 
 

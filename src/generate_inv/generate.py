@@ -19,12 +19,12 @@ from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.anthropic import AnthropicModel
 
 from .__init__ import console
-from .settings import settings
+from .settings import ANTHROPIC_API_KEY, PYDANTIC_AI_MODEL
 from .types import Company, Invoice, InvoiceItem
 
 anthropic_model = AnthropicModel(
-    model_name=settings.PYDANTIC_AI_MODEL,
-    api_key=settings.ANTHROPIC_API_KEY.get_secret_value(),
+    model_name=PYDANTIC_AI_MODEL,
+    api_key=ANTHROPIC_API_KEY,
 )
 
 

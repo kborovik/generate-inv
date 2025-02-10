@@ -31,7 +31,7 @@ def company(
     for count in range(number):
         console.print(f"Generating company number {count + 1} out of {number}")
         company = generate.company()
-        console.print(company)
+        console.print(company.model_dump_json(indent=2))
     raise Exit(0)
 
 

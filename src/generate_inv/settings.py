@@ -1,5 +1,9 @@
-from pydantic import Field
+from sys import exit
+
+from pydantic import Field, SecretStr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from .__init__ import console
 
 
 class Settings(BaseSettings):
@@ -9,7 +13,7 @@ class Settings(BaseSettings):
         default="claude-3-5-haiku-latest",
         description="Anthropic LLM model",
     )
-    ANTHROPIC_API_KEY: str = Field(
+    ANTHROPIC_API_KEY: SecretStr = Field(
         default=None,
         description="Anthropic API key",
     )
@@ -21,4 +25,8 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+try:
+    settings = Settings()
+except ValidationError as error:
+    console.log(f"Settings validation error: {error.json(indent=2)}")
+    exit(1)

@@ -225,7 +225,7 @@ woff = [
 
 [[package]]
 name = "generate-inv"
-version = "2025.2.9.post1258"
+version = "2025.2.9.post1908"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },

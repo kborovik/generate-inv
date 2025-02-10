@@ -24,7 +24,7 @@ from .types import Company, Invoice, InvoiceItem
 
 anthropic_model = AnthropicModel(
     model_name=settings.PYDANTIC_AI_MODEL,
-    api_key=settings.ANTHROPIC_API_KEY,
+    api_key=settings.ANTHROPIC_API_KEY.get_secret_value(),
 )
 
 

@@ -6,6 +6,7 @@ dependencies = [
     "jinja2>=3.1.5",
     "pydantic-ai-slim[anthropic]>=0.0.23",
     "python-dotenv>=1.0.1",
+    "sqlalchemy>=2.0.38",
     "typer>=0.15.1",
     "weasyprint>=64.0",
 ]
@@ -13,7 +14,7 @@ description = "Add your description here"
 name = "generate-inv"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "2025.02.10.post1242"
+version = "2025.02.11.post1403"
 
 [project.scripts]
 generate-inv = "generate_inv:cli"

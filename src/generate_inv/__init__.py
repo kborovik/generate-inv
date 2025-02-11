@@ -11,8 +11,8 @@ package_name = metadata(__package__).get("name")
 ENV_FILE = Path.home() / ".config" / package_name / "settings.env"
 ENV_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-DB_DIR = Path.home() / ".local" / "share" / package_name
-DB_DIR.mkdir(parents=True, exist_ok=True)
+DB_FILE = Path.home() / ".local" / "share" / package_name / f"{package_name}.db"
+DB_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 INV_DIR = Path.home() / "Downloads" / package_name
 INV_DIR.mkdir(parents=True, exist_ok=True)
@@ -31,7 +31,21 @@ def company(
     for count in range(number):
         console.print(f"Generating company number {count + 1} out of {number}")
         company = generate.company()
-        console.print(company.model_dump_json(indent=2))
+        console.print(company)
+    raise Exit(0)
+
+
+@cli.command(no_args_is_help=True)
+def invoice_items(
+    number: Annotated[int, Option(help="Number of invoice items", show_default=False)],
+) -> None:
+    """Generate synthetic invoice items"""
+    from . import generate
+
+    for count in range(number):
+        console.print(f"Generating invoice item number {count + 1} out of {number}")
+        invoice_items = generate.invoice_items(quantity=5)
+        console.print(invoice_items)
     raise Exit(0)
 
 

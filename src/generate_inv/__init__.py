@@ -39,7 +39,7 @@ def company(
 def invoice_items(
     number: Annotated[int, Option(help="Number of invoice items", show_default=False)],
 ) -> None:
-    """Generate synthetic invoice items"""
+    """Generate synthetic invoice items (5 items per run)"""
     from . import generate
 
     for count in range(number):

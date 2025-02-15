@@ -71,6 +71,8 @@ class Company(BaseModel):
 
 
 class InvoiceItem(BaseModel):
+    """Invoice item model"""
+
     item_sku: str = Field(
         description="Stock Keeping Unit (SKU) number, must be 4 uppercase letters followed by 1 number",
         pattern="^[A-Z]{4}[0-9]{1}$",

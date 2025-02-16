@@ -8,8 +8,8 @@ from typer import Exit, Option, Typer
 __version__ = metadata(__package__).get("version")
 package_name = metadata(__package__).get("name")
 
-ENV_FILE = Path.home() / ".config" / package_name / "settings.env"
-ENV_FILE.parent.mkdir(parents=True, exist_ok=True)
+CONFIG_FILE = Path.home() / ".config" / package_name / "config.env"
+CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
 
 DB_FILE = Path.home() / ".local" / "share" / package_name / f"{package_name}.db"
 DB_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -72,7 +72,7 @@ def settings(
         list_settings()
     if save:
         save_settings()
-        console.print(f"Saved program settings to the file {ENV_FILE}")
+        console.print(f"Saved program settings to the file {CONFIG_FILE}")
 
     raise Exit(0)
 

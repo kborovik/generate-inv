@@ -11,10 +11,10 @@
       "module": "generate_inv",
     },
     {
-      "name": "sql",
+      "name": "db",
       "type": "debugpy",
       "request": "launch",
-      "module": "generate_inv.sql",
+      "module": "generate_inv.db",
     }
   ]
 }

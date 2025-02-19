@@ -1,9 +1,7 @@
 from pydantic import model_validator
-from sqlmodel import Field, SQLModel, create_engine
+from sqlmodel import Field, Session, SQLModel, create_engine
 
-from . import DB_FILE
-
-DB_ENGINE = create_engine(f"sqlite:///{DB_FILE}", echo=False)
+from . import DB_FILE, console
 
 
 class InvoiceItem(SQLModel, table=True):
@@ -42,7 +40,16 @@ class InvoiceItem(SQLModel, table=True):
         return f"${self.total_price:,.2f}"
 
 
-SQLModel.metadata.create_all(DB_ENGINE)
+DB_ENGINE = create_engine(f"sqlite:///{DB_FILE}", echo=False)
+
+SQLModel.metadata.create_all(DB_ENGINE, checkfirst=True)
 
 if __name__ == "__main__":
-    pass
+    from . import generate
+
+    invoice_items = generate.invoice_items(quantity=5)
+    console.print(invoice_items)
+
+    with Session(DB_ENGINE) as session:
+        session.add_all(invoice_items)
+        session.commit()

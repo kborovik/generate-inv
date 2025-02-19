@@ -117,6 +117,7 @@ commit: lint ## Commit changes
 	git commit -m "Patch: $(NAME) v$(VERSION)"
 
 release: ## Create GitHub Release
+	$(call prompt,Are you sure you want to release $(NAME) v$(VERSION)?)
 	$(eval version := $(shell date '+%Y.%m.%d'))
 	set -e
 	sed -i 's/version = "[0-9]\+\.[0-9]\+\.[0-9]\+.*"/version = "$(version)"/' pyproject.toml

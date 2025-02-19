@@ -8,7 +8,7 @@
       "name": "CurrentFile",
       "type": "debugpy",
       "request": "launch",
-      "module": "gcp_iam_roles.${fileBasenameNoExtension}",
+      "module": "generate_inv.${fileBasenameNoExtension}",
       "console": "integratedTerminal",
       "env": {
         "PYTHONPATH": "${workspaceRoot}:${PYTHONPATH}",

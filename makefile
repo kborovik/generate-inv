@@ -7,10 +7,6 @@ MAKEFLAGS += --no-builtin-rules --no-builtin-variables
 
 PATH := $(HOME)/.cargo/bin:$(abspath .venv)/bin:$(PATH)
 
-LOGFIRE_TOKEN := $(file < $(HOME)/.secrets/LOGFIRE_TOKEN)
-GEMINI_API_KEY := $(file < $(HOME)/.secrets/GEMINI_API_KEY)
-ANTHROPIC_API_KEY := $(file < $(HOME)/.secrets/ANTHROPIC_API_KEY)
-
 ifneq (,$(wildcard pyproject.toml))
 NAME := $(shell yq -p toml -o yaml '.project.name' pyproject.toml)
 MODULE := $(shell yq -p toml -o yaml '.project.scripts' pyproject.toml | cut -d':' -f2 | xargs)
@@ -22,9 +18,6 @@ settings: setup
 	$(call var,VERSION,$(VERSION))
 	$(call var,NAME,$(NAME))
 	$(call var,MODULE,$(MODULE))
-	$(call var,LOGFIRE_TOKEN,$(LOGFIRE_TOKEN))
-	$(call var,GEMINI_API_KEY,$(GEMINI_API_KEY))
-	$(call var,ANTHROPIC_API_KEY,$(ANTHROPIC_API_KEY))
 
 help:
 	echo "Usage: make [recipe]"
@@ -38,11 +31,11 @@ help:
 		} \
 	}' $(MAKEFILE_LIST)
 
-setup: $(uv_bin) .gitignore data .venv .env uv.lock
+setup: $(uv_bin) .gitignore data .venv uv.lock
 
-test: db-schema ## Run Python tests
+test: ## Run Python tests
 	$(call header,Running Python tests)
-	pytest -v -m db
+	pytest -v
 
 ruff-format:
 	ruff format .
@@ -63,8 +56,8 @@ clean: ## Reset development environment
 	rm -rf .venv requirements.txt build/ dist/ *.egg-info/
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
-run-generate: ## Run Python generate module
-	uv run -m invoice_ocr.generate
+run: ## Run Python application
+	uv run $(NAME)
 
 uv_bin := $(HOME)/.cargo/bin/uv
 
@@ -81,20 +74,23 @@ $(uv_bin):
 	.env
 	EOF
 
-define DOT_ENV
-LOGFIRE_TOKEN=$(LOGFIRE_TOKEN)
-GEMINI_API_KEY=$(GEMINI_API_KEY)
-ANTHROPIC_API_KEY=$(ANTHROPIC_API_KEY)
-endef
-
-.env:
-	echo "$$DOT_ENV" > $(@)
-
 data:
 	mkdir -p $(@)
 
 .venv:
 	uv venv
+	uv sync
+
+pyproject.toml:
+	uv init --package
+	uv add --dev ruff
+	uv add --dev pytest
+
+uv.lock: pyproject.toml
+	uv sync && touch $(@)
+
+requirements.txt: uv.lock
+	uv pip freeze --exclude-editable --color never >| $(@)
 
 define INIT_PY
 from importlib.metadata import version
@@ -108,16 +104,6 @@ endef
 src-init:
 	echo "$$INIT_PY" >| src/$(MODULE)/__init__.py
 	ruff format .
-
-pyproject.toml:
-	uv init --package
-	uv add --dev ruff
-
-uv.lock: pyproject.toml
-	uv sync --inexact && touch $(@)
-
-requirements.txt: uv.lock
-	uv pip freeze --exclude-editable --color never >| $(@)
 
 version: ## Update version
 	$(eval pre_release := $(shell date '+%H%M' | sed 's/^0*//'))
@@ -134,7 +120,7 @@ release: ## Create GitHub Release
 	$(eval version := $(shell date '+%Y.%m.%d'))
 	set -e
 	sed -i 's/version = "[0-9]\+\.[0-9]\+\.[0-9]\+.*"/version = "$(version)"/' pyproject.toml
-	uv sync --inexact
+	uv sync
 	git add --all
 	rm -rf dist/
 	uv build --wheel

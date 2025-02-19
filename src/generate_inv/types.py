@@ -1,3 +1,9 @@
+"""Main types for generating inventory
+
+Cody Instructions:
+- Use Pydantic v2.0.0 and above
+"""
+
 import re
 from datetime import datetime, timedelta
 from enum import Enum

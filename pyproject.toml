@@ -6,7 +6,7 @@ dependencies = [
     "jinja2>=3.1.5",
     "pydantic-ai-slim[anthropic]>=0.0.23",
     "python-dotenv>=1.0.1",
-    "sqlalchemy>=2.0.38",
+    "sqlmodel>=0.0.22",
     "typer>=0.15.1",
     "weasyprint>=64.0",
 ]
@@ -14,7 +14,7 @@ description = "Add your description here"
 name = "generate-inv"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "2025.02.15.post2204"
+version = "2025.02.19"
 
 [project.scripts]
 generate-inv = "generate_inv:cli"
@@ -25,6 +25,7 @@ requires = [ "hatchling" ]
 
 [dependency-groups]
 dev = [
+    "pytest>=8.3.4",
     "ruff>=0.9.5",
 ]
 
@@ -37,3 +38,8 @@ select = [ "C90", "F", "N", "N", "PL", "RUF", "SIM", "UP" ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.pytest.ini_options]
+markers = [
+    "cli: Test command line application)",
+]

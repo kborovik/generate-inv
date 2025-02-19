@@ -1,3 +1,10 @@
+"""Typer CLI for generate_inv.
+
+Cody instructions:
+- Use Typer v0.15.0 and above
+- Use Rich v13.0.0 and above
+"""
+
 from importlib.metadata import metadata
 from pathlib import Path
 from typing import Annotated
@@ -75,6 +82,35 @@ def settings(
         console.print(f"Saved program settings to the file {CONFIG_FILE}")
 
     raise Exit(0)
+
+
+@cli.command(no_args_is_help=True)
+def db(
+    show_schema: Annotated[
+        bool | None, Option("--show-schema", help="List database schema")
+    ] = None,
+    drop_schema: Annotated[
+        bool | None, Option("--drop-schema", help="Drop database schema")
+    ] = None,
+) -> None:
+    """Database operations"""
+    from sqlalchemy import inspect
+
+    from .db import DB_ENGINE, DbBase
+
+    if show_schema:
+        inspector = inspect(DB_ENGINE)
+        for table_name in inspector.get_table_names():
+            console.print(f"Table Name: {table_name}")
+            columns = inspector.get_columns(table_name)
+            console.print(columns)
+            console.print("Table Foreign Keys")
+            constraints = inspector.get_foreign_keys(table_name)
+            console.print(constraints)
+
+    if drop_schema:
+        console.print(f"Dropping database schema for {DB_ENGINE.url}")
+        DbBase.metadata.drop_all(DB_ENGINE)
 
 
 @cli.callback(invoke_without_command=True)

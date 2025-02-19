@@ -5,6 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "CurrentFile",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "gcp_iam_roles.${fileBasenameNoExtension}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceRoot}:${PYTHONPATH}",
+        "VIRTUAL_ENV": "${workspaceRoot}/.venv"
+      },
+    },
+    {
       "name": "package",
       "type": "debugpy",
       "request": "launch",

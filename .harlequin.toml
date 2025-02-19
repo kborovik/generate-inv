@@ -1,8 +1,19 @@
-default_profile = "generate-inv"
+default_profile = "linux"
 
-[profiles.generate-inv]
+[profiles.linux]
 adapter = "sqlite"
-conn_str = [ "/Users/kb/.local/share/generate-inv/generate-inv.db" ]
+conn_str = [
+  "/home/kb/.local/share/generate-inv/generate-inv.db",
+]
+keymap_name = [ "vscode" ]
+limit = 100000
+theme = "nord"
+
+[profiles.macos]
+adapter = "sqlite"
+conn_str = [
+  "/Users/kb/.local/share/generate-inv/generate-inv.db",
+]
 keymap_name = [ "vscode" ]
 limit = 100000
 theme = "nord"

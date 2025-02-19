@@ -19,8 +19,9 @@ from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.anthropic import AnthropicModel
 
 from .__init__ import console
+from .models import InvoiceItem
 from .settings import ANTHROPIC_API_KEY, PYDANTIC_AI_MODEL
-from .types import Company, Invoice, InvoiceItem
+from .types import Company, Invoice
 
 anthropic_model = AnthropicModel(
     model_name=PYDANTIC_AI_MODEL,

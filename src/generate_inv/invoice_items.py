@@ -17,7 +17,6 @@ class InvoiceItem(SQLModel, table=True):
     item_sku: str = Field(
         description="Stock Keeping Unit (SKU) number, must be random 6 uppercase letters followed by random 3 number. Example: ABCDEF123",
         unique=True,
-        index=True,
     )
     item_info: str = Field(
         description="Item or service short information description",
@@ -99,6 +98,11 @@ def generate_invoice_items() -> list[InvoiceItem]:
 def create_invoice_items_schema():
     """Create or migrate database schema"""
     SQLModel.metadata.create_all(DB_ENGINE)
+
+
+def drop_invoice_items_schema():
+    """Drop database schema"""
+    SQLModel.metadata.drop_all(DB_ENGINE)
 
 
 if __name__ == "__main__":

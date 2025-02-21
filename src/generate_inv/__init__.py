@@ -87,6 +87,7 @@ def settings(
 
 @cli.command(no_args_is_help=True)
 def db(
+    stats: Annotated[bool | None, Option("--stats", help="Show database statistics")] = None,
     show_schema: Annotated[
         bool | None, Option("--show-schema", help="List database schema")
     ] = None,
@@ -99,18 +100,23 @@ def db(
 
     from .settings import DB_ENGINE
 
+    if stats:
+        console.print(f"Database: {DB_ENGINE.url}")
+
     if show_schema:
         inspector = inspect(DB_ENGINE)
         for table_name in inspector.get_table_names():
-            console.print(f"Table Name: {table_name}")
-            columns = inspector.get_columns(table_name)
-            console.print(columns)
-            console.print("Table Foreign Keys")
-            constraints = inspector.get_foreign_keys(table_name)
-            console.print(constraints)
+            console.print(f"Table: {table_name}", style="bold blue")
+            console.print(inspector.get_columns(table_name))
+            console.print(f"    Unique: {inspector.get_unique_constraints(table_name)}")
+            console.print(f"    Foreign Keys: {inspector.get_foreign_keys(table_name)}")
+            console.print(f"    Indexes: {inspector.get_indexes(table_name)}")
 
     if drop_schema:
-        console.print(f"Dropping database schema for {DB_ENGINE.url}")
+        from .invoice_items import drop_invoice_items_schema
+
+        console.print("Dropping database schema for InvoiceItems")
+        drop_invoice_items_schema()
 
 
 @cli.callback(invoke_without_command=True)

@@ -33,39 +33,61 @@ cli = Typer(no_args_is_help=True)
 
 @cli.command(no_args_is_help=True)
 def company(
-    number: Annotated[int, Option(help="Number of companies", show_default=False)],
+    generate: Annotated[
+        int | None, Option(help="Generate number of companies", show_default=False)
+    ] = None,
+    list: Annotated[bool | None, Option("--list", help="List Company")] = None,
 ) -> None:
     """Generate synthetic company"""
 
-    for count in range(number):
-        console.print(f"Generating company number {count + 1} out of {number}")
-    raise Exit(0)
+    if generate:
+        for count in range(generate):
+            console.print(f"Generating company number {count + 1} out of {generate}")
+        raise Exit(0)
+
+    elif list:
+        console.print("List of companies")
+        raise Exit(0)
 
 
 @cli.command(no_args_is_help=True)
 def invoice_items(
-    number: Annotated[int, Option(help="Number of invoice items", show_default=False)],
+    generate: Annotated[
+        int | None, Option(help="Generate number of invoice items", show_default=False)
+    ] = None,
+    list: Annotated[bool | None, Option("--list", help="List Invoice Items")] = None,
 ) -> None:
     """Generate synthetic invoice items (5 items per run)"""
-    from .invoice_items import create_invoice_items_schema, generate_invoice_items
 
-    create_invoice_items_schema()
-    for _ in range(number):
-        generate_invoice_items()
-    raise Exit(0)
+    if generate:
+        from .invoice_items import create_invoice_items_schema, generate_invoice_items
+
+        create_invoice_items_schema()
+        for _ in range(generate):
+            generate_invoice_items()
+        raise Exit(0)
+
+    elif list:
+        from .invoice_items import list_invoice_items
+
+        list_invoice_items()
+        raise Exit(0)
 
 
 @cli.command(no_args_is_help=True)
 def invoice(
-    number: Annotated[int, Option(help="Number of invoices", show_default=False)],
+    generate: Annotated[
+        int | None, Option(help="Generate number of invoices", show_default=False)
+    ] = None,
     output: Annotated[str | None, Option(help="Output directory")] = INV_DIR,
 ) -> None:
     """Generate synthetic invoice"""
 
-    for count in range(number):
-        console.print(f"Generating invoice {count + 1} out of {number}")
-    console.print(f"Output file: {output}")
-    raise Exit(0)
+    if generate:
+        for count in range(generate):
+            console.print(f"Generating invoice {count + 1} out of {generate}")
+        console.print(f"Output file: {output}")
+        raise Exit(0)
 
 
 @cli.command(no_args_is_help=True)

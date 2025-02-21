@@ -1,6 +1,6 @@
-"""
+"""Company Model
 Cody Instructions:
-- Use Python 3.10+
+- Use Python 3.12+
 - Use Pydantic v2.0+
 """
 

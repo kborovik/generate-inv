@@ -31,9 +31,8 @@ class InvoiceItem(SQLModel, table=True):
     )
 
     @property
-    def total_price(self) -> float:
-        total_price = self.quantity * self.unit_price
-        return f"${total_price:,.2f}"
+    def total_price(self) -> Decimal:
+        return self.quantity * self.unit_price
 
 
 def generate_invoice_items() -> list[InvoiceItem]:
@@ -44,15 +43,15 @@ def generate_invoice_items() -> list[InvoiceItem]:
         present_invoice_items = session.exec(statement).all()
 
     system_prompt = (
-        "You are a helpful assistant that generates invoice line items. "
-        "Do not use item_sku or item_info that are already in database. "
-        f"List of item_sku and item_info in database: {present_invoice_items}"
+        "You are creative synthetic data generation assistant. "
+        "Your goal in life is to generate unique realistic invoice line items for a computer equipment shop. "
     )
 
     user_prompt = (
-        f"Generate 5 computer equipment invoice line items. "
-        "Avoid duplicate item_sku and item_info. "
-        f"Use JSON schema for each invoice line item: {json.dumps(InvoiceItem.model_json_schema())}"
+        f"Generate 5 unique computer equipment invoice line items. "
+        f"Use JSON schema for each invoice line item: <json_schema>{json.dumps(InvoiceItem.model_json_schema())}</json_schema>. "
+        "Do not use item_sku or item_info that are already in the database. "
+        f"Here is the list of item_sku and item_info that are in the current database: <database_data>{present_invoice_items}</database_data>. "
     )
 
     agent = Agent(
@@ -95,6 +94,34 @@ def generate_invoice_items() -> list[InvoiceItem]:
     return result.data
 
 
+def list_invoice_items() -> None:
+    """List invoice items from database"""
+    from rich.table import Table
+
+    with Session(DB_ENGINE) as session:
+        statement = select(InvoiceItem).order_by(InvoiceItem.id)
+        invoice_items = session.exec(statement).all()
+
+    table = Table(title="Invoice Items")
+
+    table.add_column("SKU", style="cyan")
+    table.add_column("Description", style="green")
+    table.add_column("Quantity", justify="right", style="blue")
+    table.add_column("Unit Price", justify="right", style="magenta")
+    table.add_column("Total Price", justify="right", style="yellow")
+
+    for item in invoice_items:
+        table.add_row(
+            item.item_sku,
+            item.item_info,
+            str(item.quantity),
+            str(item.unit_price),
+            str(item.total_price),
+        )
+    with console.pager(styles=True):
+        console.print(table)
+
+
 def create_invoice_items_schema():
     """Create or migrate database schema"""
     SQLModel.metadata.create_all(DB_ENGINE)
@@ -106,7 +133,5 @@ def drop_invoice_items_schema():
 
 
 if __name__ == "__main__":
-    # SQLModel.metadata.drop_all(DB_ENGINE)
     create_invoice_items_schema()
     generate_invoice_items()
-    # get_all_invoice_items()

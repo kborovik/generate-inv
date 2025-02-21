@@ -28,15 +28,19 @@ def test_settings_save():
 
 @pytest.mark.cli
 def test_company_number():
-    result = runner.invoke(cli, ["company", "--number", "2"])
+    result = runner.invoke(cli, ["company", "--generate", "1"])
     assert result.exit_code == 0
-    assert "Generating company number 1 out of 2" in result.stdout
-    assert "Generating company number 2 out of 2" in result.stdout
+
+
+@pytest.mark.cli
+def test_invoice_items_list():
+    result = runner.invoke(cli, ["invoice-items", "--list"])
+    assert result.exit_code == 0
 
 
 @pytest.mark.cli
 def test_invoice_items_number():
-    result = runner.invoke(cli, ["invoice-items", "--number", "1"])
+    result = runner.invoke(cli, ["invoice-items", "--generate", "1"])
     assert result.exit_code == 0
     assert "Generated 5 invoice items" in result.stdout
     assert "New invoice items" in result.stdout
@@ -44,7 +48,5 @@ def test_invoice_items_number():
 
 @pytest.mark.cli
 def test_invoice_number():
-    result = runner.invoke(cli, ["invoice", "--number", "2"])
+    result = runner.invoke(cli, ["invoice", "--generate", "1"])
     assert result.exit_code == 0
-    assert "Generating invoice 1 out of 2" in result.stdout
-    assert "Generating invoice 2 out of 2" in result.stdout

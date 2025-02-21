@@ -15,7 +15,7 @@ class InvoiceItem(SQLModel, table=True):
         primary_key=True,
     )
     item_sku: str = Field(
-        description="Stock Keeping Unit (SKU) number, must be 4 uppercase letters followed by 1 number",
+        description="Stock Keeping Unit (SKU) number, must be random 6 uppercase letters followed by random 3 number. Example: ABCDEF123",
         unique=True,
         index=True,
     )
@@ -38,30 +38,32 @@ class InvoiceItem(SQLModel, table=True):
 
 
 def generate_invoice_items() -> list[InvoiceItem]:
-    """Generate 10 invoice items and store in database"""
+    """Generate 5 invoice items and store in database"""
 
     with Session(DB_ENGINE) as session:
         statement = select(InvoiceItem.item_sku, InvoiceItem.item_info)
         present_invoice_items = session.exec(statement).all()
 
     system_prompt = (
-        "You are a creative synthetic data generator agent. "
-        "Generate unique invoice line items for a computer equipment shop based on the following guidelines: "
-        " - Use realistic product names and descriptions. "
-        " - Double-check that all required fields are included and that the data types are correct. "
+        "You are a helpful assistant that generates invoice line items. "
+        "Do not use item_sku or item_info that are already in database. "
+        f"List of item_sku and item_info in database: {present_invoice_items}"
     )
 
     user_prompt = (
-        "Generate 10 invoice items based on the following JSON schema: "
-        f"<schema>{json.dumps(InvoiceItem.model_json_schema())}</schema>"
-        "Do not generate invoice items that are already in the database. "
-        f"Here is the list of existing invoice items: <present_invoice_items>{present_invoice_items}</present_invoice_items>"
+        f"Generate 5 computer equipment invoice line items. "
+        "Avoid duplicate item_sku and item_info. "
+        f"Use JSON schema for each invoice line item: {json.dumps(InvoiceItem.model_json_schema())}"
     )
 
     agent = Agent(
         model=ANTHROPIC_MODEL,
         result_type=list[InvoiceItem],
-        system_prompt=system_prompt,
+        deps_type=None,
+        system_prompt=[system_prompt],
+        model_settings={
+            "temperature": 1.0,
+        },
     )
 
     try:

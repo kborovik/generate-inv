@@ -38,7 +38,7 @@ def test_company_number():
 def test_invoice_items_number():
     result = runner.invoke(cli, ["invoice-items", "--number", "1"])
     assert result.exit_code == 0
-    assert "Generated 10 invoice items" in result.stdout
+    assert "Generated 5 invoice items" in result.stdout
     assert "New invoice items" in result.stdout
 
 

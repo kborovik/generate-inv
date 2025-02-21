@@ -2,16 +2,18 @@ import os
 import sys
 
 import dotenv
+from sqlmodel import create_engine
 
 from .__init__ import CONFIG_FILE, DB_FILE, INV_DIR, console
 
 dotenv.load_dotenv(CONFIG_FILE)
 
-PYDANTIC_AI_MODEL = os.getenv("PYDANTIC_AI_MODEL", "claude-3-5-haiku-latest")
+DB_ENGINE = create_engine(f"sqlite:///{DB_FILE}", echo=False)
+
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
 
 settings = {
-    "PYDANTIC_AI_MODEL": PYDANTIC_AI_MODEL,
     "ANTHROPIC_API_KEY": ANTHROPIC_API_KEY,
 }
 

@@ -116,13 +116,14 @@ version: ## Update version
 commit: lint ## Commit changes
 	git commit -m "Patch: $(NAME) v$(VERSION)"
 
-release: ## Create GitHub Release
-	$(call prompt,Are you sure you want to release $(NAME) v$(VERSION)?)
+release: lint ## Create GitHub Release
+	$(if $(shell git diff --name-only --exit-code),$(error ==> Stage changes <==),)
+	$(if $(shell git diff --staged --name-only --exit-code),$(error ==> Commit changes <==),)
+	echo -n "$(magenta)Make Release? $(cyan)(yes/no)$(reset)"
+	read -p ": " answer && [ "$$answer" = "yes" ] || exit 1
 	$(eval version := $(shell date '+%Y.%m.%d'))
-	set -e
 	sed -i 's/version = "[0-9]\+\.[0-9]\+\.[0-9]\+.*"/version = "$(version)"/' pyproject.toml
 	uv sync
-	git add --all
 	rm -rf dist/
 	uv build --wheel
 	gpg --detach-sign dist/*.whl

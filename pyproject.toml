@@ -4,7 +4,7 @@ authors = [
 ]
 dependencies = [
     "jinja2>=3.1.5",
-    "pydantic-ai-slim[anthropic]>=0.0.23",
+    "pydantic-ai-slim[anthropic]>=0.0.24",
     "python-dotenv>=1.0.1",
     "sqlmodel>=0.0.22",
     "typer>=0.15.1",
@@ -14,7 +14,7 @@ description = "Add your description here"
 name = "generate-inv"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "2025.02.19"
+version = "2025.02.20.post1925"
 
 [project.scripts]
 generate-inv = "generate_inv:cli"

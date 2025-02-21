@@ -9,7 +9,8 @@ from importlib.metadata import metadata
 from pathlib import Path
 from typing import Annotated
 
-from rich.console import Console
+from rich.console import Console as RichConsole
+from rich.traceback import install as rich_traceback
 from typer import Exit, Option, Typer
 
 __version__ = metadata(__package__).get("version")
@@ -24,8 +25,10 @@ DB_FILE.parent.mkdir(parents=True, exist_ok=True)
 INV_DIR = Path.home() / "Downloads" / package_name
 INV_DIR.mkdir(parents=True, exist_ok=True)
 
+rich_traceback(show_locals=True)
+console = RichConsole()
+
 cli = Typer(no_args_is_help=True)
-console = Console()
 
 
 @cli.command(no_args_is_help=True)
@@ -33,12 +36,9 @@ def company(
     number: Annotated[int, Option(help="Number of companies", show_default=False)],
 ) -> None:
     """Generate synthetic company"""
-    from . import generate
 
     for count in range(number):
         console.print(f"Generating company number {count + 1} out of {number}")
-        company = generate.company()
-        console.print(company)
     raise Exit(0)
 
 
@@ -47,12 +47,11 @@ def invoice_items(
     number: Annotated[int, Option(help="Number of invoice items", show_default=False)],
 ) -> None:
     """Generate synthetic invoice items (5 items per run)"""
-    from . import generate
+    from .invoice_items import create_invoice_items_schema, generate_invoice_items
 
-    for count in range(number):
-        console.print(f"Generating invoice item number {count + 1} out of {number}")
-        invoice_items = generate.invoice_items(quantity=5)
-        console.print(invoice_items)
+    create_invoice_items_schema()
+    for _ in range(number):
+        generate_invoice_items()
     raise Exit(0)
 
 
@@ -62,7 +61,9 @@ def invoice(
     output: Annotated[str | None, Option(help="Output directory")] = INV_DIR,
 ) -> None:
     """Generate synthetic invoice"""
-    console.print(f"Generating {number} of invoices")
+
+    for count in range(number):
+        console.print(f"Generating invoice {count + 1} out of {number}")
     console.print(f"Output file: {output}")
     raise Exit(0)
 
@@ -96,7 +97,7 @@ def db(
     """Database operations"""
     from sqlalchemy import inspect
 
-    from .db import DB_ENGINE, DbBase
+    from .settings import DB_ENGINE
 
     if show_schema:
         inspector = inspect(DB_ENGINE)
@@ -110,7 +111,6 @@ def db(
 
     if drop_schema:
         console.print(f"Dropping database schema for {DB_ENGINE.url}")
-        DbBase.metadata.drop_all(DB_ENGINE)
 
 
 @cli.callback(invoke_without_command=True)
@@ -121,7 +121,3 @@ def callback(
     if version:
         console.print(f"Version: [green]{__version__}[/green]")
         raise Exit(0)
-
-
-if __name__ == "__main__":
-    cli()

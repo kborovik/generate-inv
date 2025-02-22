@@ -15,7 +15,7 @@ class InvoiceItem(SQLModel, table=True):
         primary_key=True,
     )
     item_sku: str = Field(
-        description="Stock Keeping Unit (SKU) number, must be random 6 uppercase letters followed by random 3 number. Example: ABCDEF123",
+        description="Stock Keeping Unit (SKU) number, must be random 6 uppercase letters followed by random 3 numbers. Example: ABCDEF123",
         unique=True,
     )
     item_info: str = Field(
@@ -50,8 +50,8 @@ def generate_invoice_items() -> list[InvoiceItem]:
     user_prompt = (
         f"Generate 5 unique computer equipment invoice line items. "
         f"Use JSON schema for each invoice line item: <json_schema>{json.dumps(InvoiceItem.model_json_schema())}</json_schema>. "
-        "Do not use item_sku or item_info that are already in the database. "
-        f"Here is the list of item_sku and item_info that are in the current database: <database_data>{present_invoice_items}</database_data>. "
+        "Do not use item_sku or item_info that are present in the database. "
+        f"Here is the list of item_sku and item_info in the current database: <database_data>{present_invoice_items}</database_data>. "
     )
 
     agent = Agent(
@@ -65,7 +65,7 @@ def generate_invoice_items() -> list[InvoiceItem]:
     )
 
     try:
-        console.print("Generating invoice items...")
+        console.print("Waiting for AI to generate invoice items...")
         result = agent.run_sync(user_prompt=user_prompt)
     except UserError as error:
         console.print(error)
@@ -75,8 +75,7 @@ def generate_invoice_items() -> list[InvoiceItem]:
         f"Generated {len(result.data)} invoice items. Request tokens: {result._usage.request_tokens}. Response tokens: {result._usage.response_tokens}."
     )
 
-    new = 0
-    duplicate = 0
+    new, dup = 0, 0
     with Session(DB_ENGINE) as session:
         for item in result.data:
             session.add(item)
@@ -84,12 +83,12 @@ def generate_invoice_items() -> list[InvoiceItem]:
                 session.commit()
             except IntegrityError:
                 session.rollback()
-                duplicate += 1
+                dup += 1
                 continue
             session.commit()
             new += 1
 
-    console.print(f"New invoice items: {new}, duplicate invoice items: {duplicate}")
+    console.print(f"New invoice items: {new}, duplicate invoice items: {dup}")
 
     return result.data
 
@@ -99,7 +98,7 @@ def list_invoice_items() -> None:
     from rich.table import Table
 
     with Session(DB_ENGINE) as session:
-        statement = select(InvoiceItem).order_by(InvoiceItem.id)
+        statement = select(InvoiceItem)
         invoice_items = session.exec(statement).all()
 
     table = Table(title="Invoice Items")
@@ -124,12 +123,18 @@ def list_invoice_items() -> None:
 
 def create_invoice_items_schema():
     """Create or migrate database schema"""
-    SQLModel.metadata.create_all(DB_ENGINE)
+    try:
+        SQLModel.metadata.create_all(DB_ENGINE)
+    except Exception as error:
+        console.print(error)
 
 
 def drop_invoice_items_schema():
     """Drop database schema"""
-    SQLModel.metadata.drop_all(DB_ENGINE)
+    try:
+        SQLModel.metadata.drop_all(DB_ENGINE)
+    except Exception as error:
+        console.print(error)
 
 
 if __name__ == "__main__":

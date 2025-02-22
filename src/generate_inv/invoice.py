@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, model_validator
 
 # from . import console
 from .company import Company
-from .invoice_items import InvoiceItem
+from .invoice_item import InvoiceItem
 from .types import Currency
 
 

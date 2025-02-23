@@ -110,10 +110,11 @@ version: ## Update version
 	$(eval version := $(shell date '+%Y.%m.%d.post$(pre_release)'))
 	set -e
 	sed -i 's/version = "[0-9]\+\.[0-9]\+\.[0-9]\+.*"/version = "$(version)"/' pyproject.toml
-	uv sync --inexact
+	uv sync
 	git add --all
 
 commit: lint ## Commit changes
+	git add --all
 	git commit -m "Patch: $(NAME) v$(VERSION)"
 
 release: lint ## Create GitHub Release

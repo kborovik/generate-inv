@@ -97,8 +97,8 @@ def generate_company() -> bool:
             company.address_billing = random_addresses[0].id
             company.address_shipping = random_addresses[1].id
 
+            session.add(company)
             try:
-                session.add(company)
                 session.commit()
                 new += 1
             except IntegrityError:
@@ -110,50 +110,33 @@ def generate_company() -> bool:
     return True
 
 
-def list_companies() -> bool:
-    """List companies from database
+def list_companies():
+    """List companies from database"""
+    from rich.table import Table
 
-    Returns:
-        bool: True if companies were listed successfully, False otherwise
-    """
-    try:
-        from rich.table import Table
+    with Session(DB_ENGINE) as session:
+        statement = select(Company)
+        companies = session.exec(statement).all()
 
-        with Session(DB_ENGINE) as session:
-            statement = select(Company)
-            companies = session.exec(statement).all()
+    table = Table(title="Companies")
 
-        if not companies:
-            console.print("No companies found in database", style="yellow")
-            return True
+    table.add_column("Company ID", style="cyan")
+    table.add_column("Company Name", style="green", no_wrap=True)
+    table.add_column("Phone Number", style="blue")
+    table.add_column("Email", style="magenta")
+    table.add_column("Website", style="yellow")
 
-        table = Table(title="Companies")
+    for item in companies:
+        table.add_row(
+            item.company_id,
+            item.company_name,
+            item.phone_number,
+            item.email,
+            item.website,
+        )
 
-        table.add_column("Company ID", style="cyan")
-        table.add_column("Company Name", style="green", no_wrap=True)
-        table.add_column("Phone Number", style="blue")
-        table.add_column("Email", style="magenta")
-        table.add_column("Website", style="yellow")
-
-        for item in companies:
-            table.add_row(
-                item.company_id,
-                item.company_name,
-                item.phone_number,
-                item.email,
-                item.website,
-            )
-
-        with console.pager(styles=True):
-            console.print(table)
-        return True
-
-    except OperationalError as error:
-        console.print(f"Database connection error: {error}", style="red")
-        return False
-    except Exception as error:
-        console.print(f"Failed to list companies: {error}", style="red")
-        return False
+    with console.pager(styles=True):
+        console.print(table)
 
 
 def create_company_schema() -> bool:

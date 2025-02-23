@@ -1,7 +1,7 @@
 import json
 from decimal import Decimal
 
-from pydantic_ai import Agent, UserError
+from pydantic_ai import Agent
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Field, Session, SQLModel, select
 
@@ -35,7 +35,7 @@ class InvoiceItem(SQLModel, table=True):
         return self.quantity * self.unit_price
 
 
-def generate_invoice_items() -> list[InvoiceItem]:
+def generate_invoice_items() -> bool:
     """Generate 5 invoice items and store in database"""
 
     with Session(DB_ENGINE) as session:
@@ -67,9 +67,9 @@ def generate_invoice_items() -> list[InvoiceItem]:
     try:
         console.print("Waiting for AI to generate invoice items...")
         result = agent.run_sync(user_prompt=user_prompt)
-    except UserError as error:
+    except Exception as error:
         console.print(error)
-        return []
+        return False
 
     console.print(
         f"Generated {len(result.data)} invoice items. Request tokens: {result._usage.request_tokens}. Response tokens: {result._usage.response_tokens}."
@@ -81,16 +81,15 @@ def generate_invoice_items() -> list[InvoiceItem]:
             session.add(item)
             try:
                 session.commit()
+                new += 1
             except IntegrityError:
                 session.rollback()
                 dup += 1
                 continue
-            session.commit()
-            new += 1
 
     console.print(f"New invoice items: {new}, duplicate invoice items: {dup}")
 
-    return result.data
+    return True
 
 
 def list_invoice_items() -> None:
@@ -121,20 +120,24 @@ def list_invoice_items() -> None:
         console.print(table)
 
 
-def create_invoice_items_schema():
+def create_invoice_items_schema() -> bool:
     """Create or migrate database schema"""
     try:
         SQLModel.metadata.create_all(DB_ENGINE)
+        return True
     except Exception as error:
         console.print(error)
+        return False
 
 
-def drop_invoice_items_schema():
+def drop_invoice_items_schema() -> bool:
     """Drop database schema"""
     try:
         SQLModel.metadata.drop_all(DB_ENGINE)
+        return True
     except Exception as error:
         console.print(error)
+        return False
 
 
 if __name__ == "__main__":

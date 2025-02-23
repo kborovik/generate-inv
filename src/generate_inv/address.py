@@ -35,7 +35,7 @@ class Address(SQLModel, table=True):
     )
 
 
-def generate_addresses() -> list[Address]:
+def generate_addresses() -> bool:
     """Generate 5 invoice items and store in database"""
 
     with Session(DB_ENGINE) as session:
@@ -71,7 +71,7 @@ def generate_addresses() -> list[Address]:
         result = agent.run_sync(user_prompt=user_prompt)
     except UserError as error:
         console.print(error)
-        return []
+        return False
 
     console.print(
         f"Generated {len(result.data)} addresses. Request tokens: {result._usage.request_tokens}. Response tokens: {result._usage.response_tokens}."
@@ -83,16 +83,15 @@ def generate_addresses() -> list[Address]:
             session.add(item)
             try:
                 session.commit()
+                new += 1
             except IntegrityError:
                 session.rollback()
                 dup += 1
                 continue
-            session.commit()
-            new += 1
 
     console.print(f"New addresses: {new}, duplicate addresses: {dup}")
 
-    return result.data
+    return True
 
 
 def get_random_address(number: int = 1) -> list[Address]:

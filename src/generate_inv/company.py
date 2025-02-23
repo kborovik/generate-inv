@@ -6,7 +6,7 @@ Cody Instructions:
 
 import json
 
-from pydantic_ai import Agent, UserError
+from pydantic_ai import Agent
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlmodel import Field, Session, SQLModel, select
 

@@ -14,7 +14,7 @@ description = "Add your description here"
 name = "generate-inv"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "2025.02.22.post123"
+version = "2025.02.22.post2234"
 
 [project.scripts]
 generate-inv = "generate_inv:cli"

@@ -7,8 +7,8 @@ Cody Instructions:
 import json
 
 from pydantic_ai import Agent
-from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlmodel import Field, Session, SQLModel, select
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import Field, Session, SQLModel, select, func
 
 from . import console
 from .settings import ANTHROPIC_MODEL, DB_ENGINE
@@ -110,6 +110,16 @@ def generate_company() -> bool:
     return True
 
 
+def get_random_company(number: int = 1) -> list[Company]:
+    """Get random company from database"""
+
+    with Session(DB_ENGINE) as session:
+        address = select(Company).order_by(func.random()).limit(number)
+        result = session.exec(address).all()
+
+    return result
+
+
 def list_companies():
     """List companies from database"""
     from rich.table import Table
@@ -148,9 +158,6 @@ def create_company_schema() -> bool:
     try:
         SQLModel.metadata.create_all(DB_ENGINE)
         return True
-    except OperationalError as error:
-        console.print(f"Database connection error: {error}", style="red")
-        return False
     except Exception as error:
         console.print(f"Failed to create schema: {error}", style="red")
         return False
@@ -161,9 +168,6 @@ def drop_company_schema() -> bool:
     try:
         SQLModel.metadata.drop_all(DB_ENGINE)
         return True
-    except OperationalError as error:
-        console.print(f"Database connection error: {error}", style="red")
-        return False
     except Exception as error:
         console.print(f"Failed to drop schema: {error}", style="red")
         return False

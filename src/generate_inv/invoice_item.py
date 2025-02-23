@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic_ai import Agent
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Field, Session, SQLModel, select
+from sqlmodel import Field, Session, SQLModel, select, func
 
 from . import console
 from .settings import ANTHROPIC_MODEL, DB_ENGINE
@@ -90,6 +90,16 @@ def generate_invoice_items() -> bool:
     console.print(f"New invoice items: {new}, duplicate invoice items: {dup}")
 
     return True
+
+
+def get_random_invoice_item(number: int = 1) -> list[InvoiceItem]:
+    """Get random invoice item from database"""
+
+    with Session(DB_ENGINE) as session:
+        address = select(InvoiceItem).order_by(func.random()).limit(number)
+        result = session.exec(address).all()
+
+    return result
 
 
 def list_invoice_items() -> None:

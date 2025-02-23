@@ -1,0 +1,2 @@
+- Use Pydantic v2.0.0 and above
+- Use SQLModel for SQL database operations

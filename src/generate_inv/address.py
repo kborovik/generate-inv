@@ -1,7 +1,9 @@
+"""Generate synthetic address data"""
+
 import json
 
 from pydantic_ai import Agent, UserError
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Field, Session, SQLModel, func, select
 
 from . import console
@@ -99,9 +101,9 @@ def get_random_address(number: int = 1) -> list[Address]:
 
     with Session(DB_ENGINE) as session:
         address = select(Address).order_by(func.random()).limit(number)
-        present_addresses = session.exec(address).all()
+        result = session.exec(address).all()
 
-    return present_addresses
+    return result
 
 
 def list_addresses() -> None:
@@ -138,9 +140,6 @@ def create_address_schema() -> bool:
     try:
         SQLModel.metadata.create_all(DB_ENGINE)
         return True
-    except OperationalError as error:
-        console.print(f"Database connection error: {error}", style="red")
-        return False
     except Exception as error:
         console.print(f"Failed to create schema: {error}", style="red")
         return False
@@ -151,9 +150,6 @@ def drop_address_schema() -> bool:
     try:
         SQLModel.metadata.drop_all(DB_ENGINE)
         return True
-    except OperationalError as error:
-        console.print(f"Database connection error: {error}", style="red")
-        return False
     except Exception as error:
         console.print(f"Failed to drop schema: {error}", style="red")
         return False

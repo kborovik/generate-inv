@@ -15,17 +15,5 @@
         "VIRTUAL_ENV": "${workspaceRoot}/.venv"
       },
     },
-    {
-      "name": "package",
-      "type": "debugpy",
-      "request": "launch",
-      "module": "generate_inv",
-    },
-    {
-      "name": "db",
-      "type": "debugpy",
-      "request": "launch",
-      "module": "generate_inv.db",
-    }
   ]
 }

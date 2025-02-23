@@ -1,11 +1,10 @@
-"""
-Cody Instructions:
-- Use Pydantic v2.0.0 and above
-"""
+"""Generate synthetic invoice data"""
 
 from datetime import datetime, timedelta
+from decimal import Decimal
+from random import randint
 
-from jinja2 import Environment, FileSystemLoader
+
 from pydantic import BaseModel, Field, model_validator
 
 # from . import console
@@ -40,31 +39,35 @@ class Invoice(BaseModel):
         description="List of items or services being billed",
         default_factory=list,
     )
-    tax_rate: int = Field(
-        description="Tax rate applied to the invoice line_items expressed as a percentage",
-        default=13,
+    tax_rate: Decimal = Field(
+        description="Tax rate applied to the invoice line_items expressed as a decimal",
+        decimal_places=2,
+        default=Decimal("0.13"),
     )
     currency: Currency = Field(
         description="Currency of invoice",
         default=Currency.CAD,
     )
-    tax_total: float = Field(
+    tax_total: Decimal = Field(
         description="Total tax amount",
-        default=0.0,
+        decimal_places=2,
+        default=Decimal("0.0"),
     )
-    subtotal: float = Field(
+    subtotal: Decimal = Field(
         description="Subtotal of invoice line_items",
-        default=0.0,
+        decimal_places=2,
+        default=Decimal("0.0"),
     )
-    total: float = Field(
+    total: Decimal = Field(
         description="Total of invoice line_items plus tax",
-        default=0.0,
+        decimal_places=2,
+        default=Decimal("0.0"),
     )
 
     @model_validator(mode="after")
     def calculate_totals(self) -> "Invoice":
         self.subtotal = sum(item.total_price for item in self.line_items)
-        self.tax_total = self.subtotal * (self.tax_rate / 100)
+        self.tax_total = self.subtotal * self.tax_rate
         self.total = self.subtotal + self.tax_total
         return self
 
@@ -81,12 +84,35 @@ class Invoice(BaseModel):
         return f"${self.total:,.2f} " + self.currency.value
 
 
-def invoice(invoice: Invoice) -> bytes:
+def generate_invoice() -> Invoice:
+    """Generate synthetic invoice data"""
+    from .company import get_random_company
+    from .invoice_item import get_random_invoice_item
+
+    line_items = get_random_invoice_item(number=randint(1, 10))
+    company = get_random_company(number=2)
+
+    invoice_number = f"INV-{randint(100, 999)}"
+
+    invoice = Invoice(
+        invoice_number=invoice_number,
+        supplier=company[0],
+        customer=company[1],
+        line_items=line_items,
+    )
+
+    return invoice
+
+
+def write_invoice(invoice: Invoice) -> bytes:
     from weasyprint import HTML
+    from jinja2 import Environment, FileSystemLoader
+    from . import package_name
 
     # Set up Jinja2 environment
-    env = Environment(loader=FileSystemLoader("src/invoice_ocr"))
-    template = env.get_template("invoice.j2")
+    template = Environment(loader=FileSystemLoader(f"src/{package_name}")).get_template(
+        "invoice.j2"
+    )
 
     # Render the template with the invoice data
     html_content = template.render(
@@ -103,8 +129,6 @@ def invoice(invoice: Invoice) -> bytes:
         total=invoice.total_formatted,
     )
 
-    # html_file = Path(f"data/{invoice.invoice_number}.html")
-    # html_file.write_text(html_content)
     # Convert HTML to PDF
     pdf_bytes = HTML(string=html_content).write_pdf()
 
@@ -112,4 +136,9 @@ def invoice(invoice: Invoice) -> bytes:
 
 
 if __name__ == "__main__":
-    pass
+    from pathlib import Path
+    from . import INV_DIR
+
+    invoice = generate_invoice()
+    pdf_bytes = write_invoice(invoice)
+    Path(INV_DIR).joinpath(f"{invoice.invoice_number}.pdf").write_bytes(pdf_bytes)

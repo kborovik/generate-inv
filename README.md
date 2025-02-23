@@ -15,7 +15,7 @@ generate-inv --help
 ### Generate Company Data
 
 ```
-(0) > generate-inv company --number 1
+(0) > generate-inv company --generate 1
 
 Generating company number 1 out of 1
 Generated company QHIA5 - Quantum Horizon Innovations. Total tokens: 3937

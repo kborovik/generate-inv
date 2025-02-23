@@ -1,7 +1,7 @@
 import json
 
 from pydantic_ai import Agent, UserError
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlmodel import Field, Session, SQLModel, func, select
 
 from . import console
@@ -67,7 +67,7 @@ def generate_addresses() -> list[Address]:
     )
 
     try:
-        console.print("Waiting for AI to addresses...")
+        console.print("Waiting for AI to generate addresses...")
         result = agent.run_sync(user_prompt=user_prompt)
     except UserError as error:
         console.print(error)
@@ -134,20 +134,30 @@ def list_addresses() -> None:
         console.print(table)
 
 
-def create_address_schema():
+def create_address_schema() -> bool:
     """Create or migrate database schema"""
     try:
         SQLModel.metadata.create_all(DB_ENGINE)
+        return True
+    except OperationalError as error:
+        console.print(f"Database connection error: {error}", style="red")
+        return False
     except Exception as error:
-        console.print(error)
+        console.print(f"Failed to create schema: {error}", style="red")
+        return False
 
 
-def drop_address_schema():
+def drop_address_schema() -> bool:
     """Drop database schema"""
     try:
         SQLModel.metadata.drop_all(DB_ENGINE)
+        return True
+    except OperationalError as error:
+        console.print(f"Database connection error: {error}", style="red")
+        return False
     except Exception as error:
-        console.print(error)
+        console.print(f"Failed to drop schema: {error}", style="red")
+        return False
 
 
 if __name__ == "__main__":

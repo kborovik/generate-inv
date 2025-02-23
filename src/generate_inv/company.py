@@ -7,7 +7,7 @@ Cody Instructions:
 import json
 
 from pydantic_ai import Agent, UserError
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlmodel import Field, Session, SQLModel, select
 
 from . import console
@@ -37,7 +37,7 @@ class Company(SQLModel, table=True):
         foreign_key="address.id",
     )
     phone_number: str = Field(
-        description="10 digit phone number. Example: 14164567890",
+        description="Phone number. The phone number must be in North American Numbering Plan (NANP) format. Example: +1 (416) 456-7890",
     )
     email: str = Field(
         description="Email address, Example: example@example.com",
@@ -47,7 +47,7 @@ class Company(SQLModel, table=True):
     )
 
 
-def generate_company() -> list[Company]:
+def generate_company() -> bool:
     """Generate synthetic company data"""
     from .address import get_random_address
 
@@ -82,9 +82,9 @@ def generate_company() -> list[Company]:
     try:
         console.print("Waiting for AI to generate company data...")
         result = agent.run_sync(user_prompt=user_prompt)
-    except UserError as error:
+    except Exception as error:
         console.print(error)
-        return []
+        return False
 
     console.print(
         f"Generated {len(result.data)} companies. Request tokens: {result._usage.request_tokens}. Response tokens: {result._usage.response_tokens}."
@@ -96,64 +96,95 @@ def generate_company() -> list[Company]:
             random_addresses = get_random_address(number=2)
             company.address_billing = random_addresses[0].id
             company.address_shipping = random_addresses[1].id
-            session.add(company)
+
             try:
+                session.add(company)
                 session.commit()
+                new += 1
             except IntegrityError:
                 session.rollback()
                 dup += 1
-            session.commit()
-            new += 1
 
     console.print(f"New companies: {new}, duplicate companies: {dup}")
 
-    return result.data
+    return True
 
 
-def list_companies() -> None:
-    """List companies from database"""
-    from rich.table import Table
+def list_companies() -> bool:
+    """List companies from database
 
-    with Session(DB_ENGINE) as session:
-        statement = select(Company)
-        addresses = session.exec(statement).all()
+    Returns:
+        bool: True if companies were listed successfully, False otherwise
+    """
+    try:
+        from rich.table import Table
 
-    table = Table(title="Companies")
+        with Session(DB_ENGINE) as session:
+            statement = select(Company)
+            companies = session.exec(statement).all()
 
-    table.add_column("Company ID", style="cyan")
-    table.add_column("Company Name", style="green")
-    table.add_column("Phone Number", style="blue")
-    table.add_column("Email", style="magenta")
-    table.add_column("Website", style="yellow")
+        if not companies:
+            console.print("No companies found in database", style="yellow")
+            return True
 
-    for item in addresses:
-        table.add_row(
-            item.company_id,
-            item.company_name,
-            item.phone_number,
-            item.email,
-            item.website,
-        )
-    with console.pager(styles=True):
-        console.print(table)
+        table = Table(title="Companies")
+
+        table.add_column("Company ID", style="cyan")
+        table.add_column("Company Name", style="green", no_wrap=True)
+        table.add_column("Phone Number", style="blue")
+        table.add_column("Email", style="magenta")
+        table.add_column("Website", style="yellow")
+
+        for item in companies:
+            table.add_row(
+                item.company_id,
+                item.company_name,
+                item.phone_number,
+                item.email,
+                item.website,
+            )
+
+        with console.pager(styles=True):
+            console.print(table)
+        return True
+
+    except OperationalError as error:
+        console.print(f"Database connection error: {error}", style="red")
+        return False
+    except Exception as error:
+        console.print(f"Failed to list companies: {error}", style="red")
+        return False
 
 
-def create_company_schema():
-    """Create or migrate database schema"""
+def create_company_schema() -> bool:
+    """Create or migrate database schema
+
+    Returns:
+        bool: True if schema was created/updated successfully, False otherwise
+    """
     try:
         SQLModel.metadata.create_all(DB_ENGINE)
+        return True
+    except OperationalError as error:
+        console.print(f"Database connection error: {error}", style="red")
+        return False
     except Exception as error:
-        console.print(error)
+        console.print(f"Failed to create schema: {error}", style="red")
+        return False
 
 
-def drop_company_schema():
+def drop_company_schema() -> bool:
     """Drop database schema"""
     try:
         SQLModel.metadata.drop_all(DB_ENGINE)
+        return True
+    except OperationalError as error:
+        console.print(f"Database connection error: {error}", style="red")
+        return False
     except Exception as error:
-        console.print(error)
+        console.print(f"Failed to drop schema: {error}", style="red")
+        return False
 
 
 if __name__ == "__main__":
-    create_company_schema()
-    generate_company()
+    pass

@@ -128,6 +128,7 @@ release: lint ## Create GitHub Release
 	rm -rf dist/
 	uv build --wheel
 	gpg --detach-sign dist/*.whl
+	git add --all
 	git commit -m "Release: $(NAME) v$(version)" || true
 	git push origin main
 	gh release create $(version) --title "$(version)" --generate-notes ./dist/*.*

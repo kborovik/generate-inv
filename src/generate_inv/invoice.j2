@@ -9,18 +9,18 @@
 		.invoice-box {
 			color: #555;
 			font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-			font-size: 12px;
-			line-height: 20px;
+			font-size: 10px;
+			line-height: 14px;
 			margin: auto;
 			max-width: 800px;
-			padding: 20px;
+			padding: 14px;
 		}
 
 		.invoice-box table {
 			width: 100%;
 			line-height: inherit;
 			text-align: left;
-			padding-bottom: 20px;
+			padding-bottom: 14px;
 		}
 
 		.invoice-box table td {
@@ -41,12 +41,12 @@
 		}
 
 		.invoice-box table tr.top table td {
-			padding-bottom: 20px;
+			padding-bottom: 18px;
 		}
 
 		.invoice-box table tr.top table td.title {
-			font-size: 18px;
-			line-height: 22px;
+			font-size: 10px;
+			line-height: inherit;
 			color: #333;
 		}
 
@@ -61,7 +61,7 @@
 		}
 
 		.invoice-box table tr.details td {
-			padding-bottom: 20px;
+			padding-bottom: inherit;
 		}
 
 		.invoice-box table tr.item td {
@@ -136,7 +136,8 @@
 							<td>
 								<b>Supplier</b><br />
 								{{ supplier.company_name }}<br />
-								{{ supplier.address_billing.address_line1 }}, {{ supplier.address_billing.address_line2 }}<br />
+								{{ supplier.address_billing.address_line1 }}, {{ supplier.address_billing.address_line2
+								}}<br />
 								{{ supplier.address_billing.city }}, {{ supplier.address_billing.province }} {{
 								supplier.address_billing.postal_code }}<br />
 								{{ supplier.website }}<br />
@@ -147,7 +148,8 @@
 							<td>
 								<b>Customer</b><br />
 								{{ customer.company_name }}<br />
-								{{ customer.address_billing.address_line1 }}, {{ customer.address_billing.address_line2 }}<br />
+								{{ customer.address_billing.address_line1 }}, {{ customer.address_billing.address_line2
+								}}<br />
 								{{ customer.address_billing.city }}, {{ customer.address_billing.province }} {{
 								customer.address_billing.postal_code }}<br />
 								{{ customer.website }}<br />
@@ -174,8 +176,8 @@
 			<tr class="item">
 				<td>{{ item.item_info }}</td>
 				<td>{{ item.quantity }}</td>
-				<td>{{ item.unit_price_formatted }}</td>
-				<td>{{ item.total_price_formatted }}</td>
+				<td>{{ item.unit_price }}</td>
+				<td>{{ item.total_price }}</td>
 			</tr>
 			{% endfor %}
 
@@ -196,7 +198,7 @@
 			<tr class="item">
 				<td></td>
 				<td></td>
-				<td>HST Canada {{tax_rate}}%</td>
+				<td>HST Canada {{ tax_rate }}</td>
 				<td>{{ tax_total }}</td>
 			</tr>
 

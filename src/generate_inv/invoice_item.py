@@ -1,38 +1,15 @@
+"""Generate synthetic invoice item data"""
+
 import json
-from decimal import Decimal
 
 from pydantic_ai import Agent
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Field, Session, SQLModel, select, func
+from sqlmodel import Session, select
 
 from . import console
-from .settings import ANTHROPIC_MODEL, DB_ENGINE
-
-
-class InvoiceItem(SQLModel, table=True):
-    id: int | None = Field(
-        default=None,
-        primary_key=True,
-    )
-    item_sku: str = Field(
-        description="Stock Keeping Unit (SKU) number, must be random 6 uppercase letters followed by random 3 numbers. Example: ABCDEF123",
-        unique=True,
-    )
-    item_info: str = Field(
-        description="Item or service short information description",
-        unique=True,
-    )
-    quantity: int = Field(
-        description="Quantity of items",
-    )
-    unit_price: Decimal = Field(
-        description="Price per unit",
-        decimal_places=2,
-    )
-
-    @property
-    def total_price(self) -> Decimal:
-        return self.quantity * self.unit_price
+from .database import DB_ENGINE
+from .models import InvoiceItem
+from .settings import ANTHROPIC_MODEL
 
 
 def generate_invoice_items() -> bool:
@@ -92,16 +69,6 @@ def generate_invoice_items() -> bool:
     return True
 
 
-def get_random_invoice_item(number: int = 1) -> list[InvoiceItem]:
-    """Get random invoice item from database"""
-
-    with Session(DB_ENGINE) as session:
-        address = select(InvoiceItem).order_by(func.random()).limit(number)
-        result = session.exec(address).all()
-
-    return result
-
-
 def list_invoice_items() -> None:
     """List invoice items from database"""
     from rich.table import Table
@@ -130,26 +97,5 @@ def list_invoice_items() -> None:
         console.print(table)
 
 
-def create_invoice_items_schema() -> bool:
-    """Create or migrate database schema"""
-    try:
-        SQLModel.metadata.create_all(DB_ENGINE)
-        return True
-    except Exception as error:
-        console.print(error)
-        return False
-
-
-def drop_invoice_items_schema() -> bool:
-    """Drop database schema"""
-    try:
-        SQLModel.metadata.drop_all(DB_ENGINE)
-        return True
-    except Exception as error:
-        console.print(error)
-        return False
-
-
 if __name__ == "__main__":
-    create_invoice_items_schema()
     generate_invoice_items()

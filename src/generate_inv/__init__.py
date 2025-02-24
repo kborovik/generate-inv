@@ -38,12 +38,13 @@ def address(
 ) -> None:
     """Generate synthetic addresses (5 items per run)"""
 
-    from .address import create_address_schema, generate_addresses, list_addresses
+    from .address import generate_addresses, list_addresses
+    from .models import create_db_schema
 
     if generate:
         for count in range(generate):
             console.print(f"Generating address batch {count + 1} out of {generate}")
-            create_address_schema()
+            create_db_schema()
             generate_addresses()
         raise Exit(0)
 
@@ -58,12 +59,13 @@ def company(
     list: Annotated[bool | None, Option("--list", help="List Company")] = None,
 ) -> None:
     """Generate synthetic company"""
-    from .company import create_company_schema, generate_company, list_companies
+    from .company import generate_company, list_companies
+    from .models import create_db_schema
 
     if generate:
         for count in range(generate):
             console.print(f"Generating company batch {count + 1} out of {generate}")
-            create_company_schema()
+            create_db_schema()
             generate_company()
         raise Exit(0)
 
@@ -83,9 +85,10 @@ def invoice_item(
     """Generate synthetic invoice items (5 items per run)"""
 
     if generate:
-        from .invoice_item import create_invoice_items_schema, generate_invoice_items
+        from .invoice_item import generate_invoice_items
+        from .models import create_db_schema
 
-        create_invoice_items_schema()
+        create_db_schema()
         for count in range(generate):
             console.print(f"Generating invoice items batch {count + 1} out of {generate}")
             generate_invoice_items()
@@ -134,13 +137,9 @@ def database(
         raise Exit(0)
 
     elif create_schema:
-        from .address import create_address_schema
-        from .company import create_company_schema
-        from .invoice_item import create_invoice_items_schema
+        from .models import create_db_schema
 
-        create_invoice_items_schema()
-        create_address_schema()
-        create_company_schema()
+        create_db_schema()
         console.print("Created database schema")
         raise Exit(0)
 
@@ -151,13 +150,9 @@ def database(
         raise Exit(0)
 
     elif drop_schema:
-        from .address import drop_address_schema
-        from .company import drop_company_schema
-        from .invoice_item import drop_invoice_items_schema
+        from .models import drop_db_schema
 
-        drop_invoice_items_schema()
-        drop_company_schema()
-        drop_address_schema()
+        drop_db_schema()
         console.print("Created database schema")
         raise Exit(0)
 

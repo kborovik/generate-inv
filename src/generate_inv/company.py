@@ -1,55 +1,18 @@
-"""Company Model
-Cody Instructions:
-- Use Python 3.12+
-- Use Pydantic v2.0+
-"""
-
 import json
 
 from pydantic_ai import Agent
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Field, Session, SQLModel, select, func
+from sqlmodel import Session, func, select
 
 from . import console
-from .settings import ANTHROPIC_MODEL, DB_ENGINE
-
-
-class Company(SQLModel, table=True):
-    id: int | None = Field(
-        default=None,
-        primary_key=True,
-    )
-    company_id: str = Field(
-        description="Human readable Company ID, must be random 6 uppercase letters followed by random 3 numbers. Example: ABCDEF123",
-        unique=True,
-    )
-    company_name: str = Field(
-        description="Company name",
-        unique=True,
-    )
-    address_billing: int | None = Field(
-        description="Company billing address",
-        foreign_key="address.id",
-    )
-    address_shipping: int | None = Field(
-        description="Company shipping address",
-        default=None,
-        foreign_key="address.id",
-    )
-    phone_number: str = Field(
-        description="Phone number. The phone number must be in North American Numbering Plan (NANP) format. Example: +1 (416) 456-7890",
-    )
-    email: str = Field(
-        description="Email address, Example: example@example.com",
-    )
-    website: str = Field(
-        description="Company website URL, Example: https://www.example.com",
-    )
+from .address import Address
+from .database import DB_ENGINE
+from .models import Company
+from .settings import ANTHROPIC_MODEL
 
 
 def generate_company() -> bool:
     """Generate synthetic company data"""
-    from .address import get_random_address
 
     with Session(DB_ENGINE) as session:
         statement = select(Company.company_id, Company.company_name)
@@ -92,10 +55,11 @@ def generate_company() -> bool:
 
     new, dup = 0, 0
     with Session(DB_ENGINE) as session:
+        random_addresses = session.exec(select(Address).order_by(func.random()).limit(2)).all()
+
         for company in result.data:
-            random_addresses = get_random_address(number=2)
-            company.address_billing = random_addresses[0].id
-            company.address_shipping = random_addresses[1].id
+            company.address_billing_id = random_addresses[0].id
+            company.address_shipping_id = random_addresses[1].id
 
             session.add(company)
             try:
@@ -108,16 +72,6 @@ def generate_company() -> bool:
     console.print(f"New companies: {new}, duplicate companies: {dup}")
 
     return True
-
-
-def get_random_company(number: int = 1) -> list[Company]:
-    """Get random company from database"""
-
-    with Session(DB_ENGINE) as session:
-        address = select(Company).order_by(func.random()).limit(number)
-        result = session.exec(address).all()
-
-    return result
 
 
 def list_companies():
@@ -147,30 +101,6 @@ def list_companies():
 
     with console.pager(styles=True):
         console.print(table)
-
-
-def create_company_schema() -> bool:
-    """Create or migrate database schema
-
-    Returns:
-        bool: True if schema was created/updated successfully, False otherwise
-    """
-    try:
-        SQLModel.metadata.create_all(DB_ENGINE)
-        return True
-    except Exception as error:
-        console.print(f"Failed to create schema: {error}", style="red")
-        return False
-
-
-def drop_company_schema() -> bool:
-    """Drop database schema"""
-    try:
-        SQLModel.metadata.drop_all(DB_ENGINE)
-        return True
-    except Exception as error:
-        console.print(f"Failed to drop schema: {error}", style="red")
-        return False
 
 
 if __name__ == "__main__":

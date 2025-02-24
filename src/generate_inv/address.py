@@ -4,45 +4,19 @@ import json
 
 from pydantic_ai import Agent, UserError
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Field, Session, SQLModel, func, select
+from sqlmodel import Session, select
 
 from . import console
-from .settings import ANTHROPIC_MODEL, DB_ENGINE
-
-
-class Address(SQLModel, table=True):
-    id: int | None = Field(
-        default=None,
-        primary_key=True,
-    )
-    address_line1: str = Field(
-        description="Address Line 1, Required",
-        unique=True,
-    )
-    address_line2: str = Field(
-        description="Address Line 2, Optional",
-    )
-    city: str = Field(
-        description="Canada City Name",
-    )
-    province: str = Field(
-        description="Canada Province Name",
-    )
-    postal_code: str = Field(
-        description="Canada Postal Code",
-    )
-    country: str = Field(
-        description="Country Name",
-        default="Canada",
-    )
+from .database import DB_ENGINE
+from .models import Address
+from .settings import ANTHROPIC_MODEL
 
 
 def generate_addresses() -> bool:
     """Generate 5 invoice items and store in database"""
 
     with Session(DB_ENGINE) as session:
-        statement = select(Address.address_line1)
-        present_addresses = session.exec(statement).all()
+        present_addresses = session.exec(select(Address.address_line1)).all()
 
     system_prompt = (
         "You are creative synthetic data generation assistant. "
@@ -96,16 +70,6 @@ def generate_addresses() -> bool:
     return True
 
 
-def get_random_address(number: int = 1) -> list[Address]:
-    """Get random address from database"""
-
-    with Session(DB_ENGINE) as session:
-        address = select(Address).order_by(func.random()).limit(number)
-        result = session.exec(address).all()
-
-    return result
-
-
 def list_addresses() -> None:
     """List addresses from database"""
 
@@ -135,25 +99,5 @@ def list_addresses() -> None:
         console.print(table)
 
 
-def create_address_schema() -> bool:
-    """Create or migrate database schema"""
-    try:
-        SQLModel.metadata.create_all(DB_ENGINE)
-        return True
-    except Exception as error:
-        console.print(f"Failed to create schema: {error}", style="red")
-        return False
-
-
-def drop_address_schema() -> bool:
-    """Drop database schema"""
-    try:
-        SQLModel.metadata.drop_all(DB_ENGINE)
-        return True
-    except Exception as error:
-        console.print(f"Failed to drop schema: {error}", style="red")
-        return False
-
-
 if __name__ == "__main__":
-    get_random_address()
+    list_addresses()

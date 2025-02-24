@@ -1,9 +1,11 @@
 from sqlalchemy import MetaData, Table, inspect
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.schema import CreateTable
+from sqlmodel import create_engine
 
-from . import console
-from .settings import DB_ENGINE
+from . import DB_FILE, console
+
+DB_ENGINE = create_engine(f"sqlite:///{DB_FILE}", echo=False)
 
 
 def show_schema() -> None:
@@ -31,4 +33,3 @@ def show_stats() -> None:
 
 if __name__ == "__main__":
     show_schema()
-    show_stats()

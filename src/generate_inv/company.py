@@ -1,3 +1,5 @@
+"""Generate synthetic company data"""
+
 import json
 
 from pydantic_ai import Agent

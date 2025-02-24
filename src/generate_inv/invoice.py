@@ -1,5 +1,6 @@
 """Generate synthetic invoice data"""
 
+from pathlib import Path
 from random import randint
 
 from sqlmodel import Session, func, select
@@ -8,7 +9,7 @@ from sqlmodel import Session, func, select
 from .company import Company
 from .database import DB_ENGINE
 from .invoice_item import InvoiceItem
-from .models import Invoice
+from .models import Address, Invoice
 
 
 def generate_invoice() -> Invoice:
@@ -41,13 +42,22 @@ def write_invoice(invoice: Invoice) -> bytes:
     template_dir = Path(__file__).parent
     template = Environment(loader=FileSystemLoader(template_dir)).get_template("invoice.j2")
 
-    # Render the template with the invoice data
+    with Session(DB_ENGINE) as session:
+        supplier_address_billing = session.get(Address, invoice.supplier.address_billing_id)
+        supplier_address_shipping = session.get(Address, invoice.supplier.address_shipping_id)
+        customer_address_billing = session.get(Address, invoice.customer.address_billing_id)
+        customer_address_shipping = session.get(Address, invoice.customer.address_shipping_id)
+
     html_content = template.render(
         invoice_number=invoice.invoice_number,
         issue_date=invoice.issue_date.strftime("%Y-%m-%d"),
         due_date=invoice.due_date.strftime("%Y-%m-%d"),
         supplier=invoice.supplier,
+        supplier_address_billing=supplier_address_billing,
+        supplier_address_shipping=supplier_address_shipping,
         customer=invoice.customer,
+        customer_address_billing=customer_address_billing,
+        customer_address_shipping=customer_address_shipping,
         currency=invoice.currency.value,
         line_items=invoice.line_items,
         tax_rate=invoice.tax_rate_formatted,
@@ -62,11 +72,8 @@ def write_invoice(invoice: Invoice) -> bytes:
 
 
 if __name__ == "__main__":
-    from pathlib import Path
-
-    from . import INV_DIR, console
+    from . import INV_DIR
 
     invoice = generate_invoice()
-    console.print(invoice)
     pdf_bytes = write_invoice(invoice)
     Path(INV_DIR).joinpath(f"{invoice.invoice_number}.pdf").write_bytes(pdf_bytes)

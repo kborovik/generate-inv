@@ -15,6 +15,7 @@ from typer import Exit, Option, Typer
 
 __version__ = metadata(__package__).get("version")
 package_name = metadata(__package__).get("name")
+root_dir = Path(__file__).parent
 
 CONFIG_FILE = Path.home() / ".config" / package_name / "config.env"
 CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -107,10 +108,15 @@ def invoice(
     output: Annotated[str | None, Option(help="Output directory")] = INV_DIR,
 ) -> None:
     """Generate synthetic invoices"""
+    from .invoice import generate_invoice, write_invoice
 
     if generate:
         for count in range(generate):
             console.print(f"Generating invoice {count + 1} out of {generate}")
+            invoice = generate_invoice()
+            pdf_bytes = write_invoice(invoice)
+            Path(INV_DIR).joinpath(f"{invoice.invoice_number}.pdf").write_bytes(pdf_bytes)
+
         console.print(f"Output file: {output}")
         raise Exit(0)
 

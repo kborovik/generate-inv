@@ -15,5 +15,21 @@
         "VIRTUAL_ENV": "${workspaceRoot}/.venv"
       },
     },
+    {
+      "name": "Invoice",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "generate_inv",
+      "args": [
+        "invoice",
+        "--generate",
+        "1"
+      ],
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceRoot}:${PYTHONPATH}",
+        "VIRTUAL_ENV": "${workspaceRoot}/.venv"
+      },
+    },
   ]
 }

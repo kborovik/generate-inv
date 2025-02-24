@@ -135,26 +135,38 @@
 
 							<td>
 								<b>Supplier</b><br />
-								{{ supplier.company_name }}<br />
-								{{ supplier.address_billing.address_line1 }}, {{ supplier.address_billing.address_line2
-								}}<br />
-								{{ supplier.address_billing.city }}, {{ supplier.address_billing.province }} {{
-								supplier.address_billing.postal_code }}<br />
-								{{ supplier.website }}<br />
-								{{ supplier.email }}<br />
-								{{ supplier.phone_number }}<br />
+								<b>Name: </b>{{ supplier.company_name }}<br />
+								<b>Billing Address: </b>{{ supplier_address_billing.address_line1 }}, {{
+								supplier_address_billing.address_line2
+								}}<br>
+								{{ supplier_address_billing.city }}, {{ supplier_address_billing.province }} {{
+								supplier_address_billing.postal_code }}<br />
+								<b>Shipping Address: </b>{{ supplier_address_shipping.address_line1 }}, {{
+								supplier_address_shipping.address_line2
+								}}<br>
+								{{ supplier_address_shipping.city }}, {{ supplier_address_shipping.province }} {{
+								supplier_address_shipping.postal_code }}<br />
+								<b>Website: </b>{{ supplier.website }}<br />
+								<b>Email: </b>{{ supplier.email }}<br />
+								<b>Phone: </b>{{ supplier.phone_number }}<br />
 							</td>
 
 							<td>
 								<b>Customer</b><br />
-								{{ customer.company_name }}<br />
-								{{ customer.address_billing.address_line1 }}, {{ customer.address_billing.address_line2
-								}}<br />
-								{{ customer.address_billing.city }}, {{ customer.address_billing.province }} {{
-								customer.address_billing.postal_code }}<br />
-								{{ customer.website }}<br />
-								{{ customer.email }}<br />
-								{{ customer.phone_number }}<br />
+								<b>Name: </b>{{ customer.company_name }}<br />
+								<b>Billing Address: </b>{{ customer_address_billing.address_line1 }}, {{
+								customer_address_billing.address_line2
+								}}<br>
+								{{ customer_address_billing.city }}, {{ customer_address_billing.province }} {{
+								customer_address_billing.postal_code }}<br />
+								<b>Shipping Address: </b>{{ customer_address_shipping.address_line1 }}, {{
+								customer_address_shipping.address_line2
+								}}<br>
+								{{ customer_address_shipping.city }}, {{ customer_address_shipping.province }} {{
+								customer_address_shipping.postal_code }}<br />
+								<b>Website: </b>{{ customer.website }}<br />
+								<b>Email: </b>{{ customer.email }}<br />
+								<b>Phone: </b>{{ customer.phone_number }}<br />
 							</td>
 
 						</tr>

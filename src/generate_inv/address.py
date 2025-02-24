@@ -49,10 +49,6 @@ def generate_addresses() -> bool:
         console.print(error)
         return False
 
-    console.print(
-        f"Generated {len(result.data)} addresses. Request tokens: {result._usage.request_tokens}. Response tokens: {result._usage.response_tokens}."
-    )
-
     new, dup = 0, 0
     with Session(DB_ENGINE) as session:
         for item in result.data:

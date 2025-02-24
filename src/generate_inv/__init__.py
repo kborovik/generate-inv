@@ -1,9 +1,4 @@
-"""Typer CLI for generate_inv.
-
-Cody instructions:
-- Use Typer v0.15.0 and above
-- Use Rich v13.0.0 and above
-"""
+"""Typer CLI for generate_inv"""
 
 from importlib.metadata import metadata
 from pathlib import Path

@@ -51,10 +51,6 @@ def generate_company() -> bool:
         console.print(error)
         return False
 
-    console.print(
-        f"Generated {len(result.data)} companies. Request tokens: {result._usage.request_tokens}. Response tokens: {result._usage.response_tokens}."
-    )
-
     new, dup = 0, 0
     with Session(DB_ENGINE) as session:
         random_addresses = session.exec(select(Address).order_by(func.random()).limit(2)).all()

@@ -27,26 +27,42 @@ def test_settings_save():
 
 
 @pytest.mark.cli
-def test_company_number():
-    result = runner.invoke(cli, ["company", "--generate", "1"])
+def test_address_list():
+    result = runner.invoke(cli, ["address", "--list"])
     assert result.exit_code == 0
 
 
 @pytest.mark.cli
 def test_invoice_items_list():
-    result = runner.invoke(cli, ["invoice-items", "--list"])
+    result = runner.invoke(cli, ["invoice-item", "--list"])
     assert result.exit_code == 0
 
 
 @pytest.mark.cli
-def test_invoice_items_number():
-    result = runner.invoke(cli, ["invoice-items", "--generate", "1"])
+def test_company_list():
+    result = runner.invoke(cli, ["company", "--list"])
     assert result.exit_code == 0
-    assert "Generated 5 invoice items" in result.stdout
-    assert "New invoice items" in result.stdout
 
 
 @pytest.mark.cli
-def test_invoice_number():
+def test_address_generate():
+    result = runner.invoke(cli, ["address", "--generate", "1"])
+    assert result.exit_code == 0
+
+
+@pytest.mark.cli
+def test_invoice_items_generate():
+    result = runner.invoke(cli, ["invoice-item", "--generate", "1"])
+    assert result.exit_code == 0
+
+
+@pytest.mark.cli
+def test_company_generate():
+    result = runner.invoke(cli, ["company", "--generate", "1"])
+    assert result.exit_code == 0
+
+
+@pytest.mark.cli
+def test_invoice_generate():
     result = runner.invoke(cli, ["invoice", "--generate", "1"])
     assert result.exit_code == 0

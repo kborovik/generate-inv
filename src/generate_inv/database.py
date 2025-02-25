@@ -1,7 +1,7 @@
 from sqlalchemy import MetaData, Table, inspect
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.schema import CreateTable
-from sqlmodel import create_engine
+from sqlmodel import Session, create_engine, func, select
 
 from . import DB_FILE, console
 
@@ -28,7 +28,25 @@ def show_schema() -> None:
 
 def show_stats() -> None:
     """Show database statistics"""
-    console.print("Database statistics")
+    from rich.table import Table
+
+    from .models import Address, Company, InvoiceItem
+
+    with Session(DB_ENGINE) as session:
+        address_count = session.scalar(select(func.count(Address.id)))
+        company_count = session.scalar(select(func.count(Company.id)))
+        invoice_item_count = session.scalar(select(func.count(InvoiceItem.id)))
+
+    table = Table(title="Database Statistics")
+
+    table.add_column("Table Name", style="green")
+    table.add_column("Records Count", style="yellow")
+    table.add_row("Address", str(address_count))
+    table.add_row("Company", str(company_count))
+    table.add_row("InvoiceItem", str(invoice_item_count))
+
+    with console.pager(styles=True):
+        console.print(table)
 
 
 if __name__ == "__main__":
